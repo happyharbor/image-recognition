@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+}
+
+group 'io.happyharbor.image.recognition'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // platforms
+    implementation platform('software.amazon.awssdk:bom:2.17.52'),
+            platform('com.amazonaws:aws-java-sdk-bom:1.11.940'),
+            platform('org.apache.logging.log4j:log4j-bom:2.14.1'),
+            platform('org.junit:junit-bom:5.7.0')
+
+    // aws
+    implementation 'software.amazon.awssdk:lambda',
+            'com.amazonaws:aws-lambda-java-core:1.2.1',
+            'com.amazonaws:aws-lambda-java-events:3.10.0',
+            'software.amazon.awssdk:dynamodb-enhanced',
+            'software.amazon.awssdk:s3'
+
+    // logging
+    implementation 'org.apache.logging.log4j:log4j-api',
+            'org.apache.logging.log4j:log4j-core'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j18-impl',
+            'com.amazonaws:aws-lambda-java-log4j2:1.2.0'
+
+    // other
+    implementation 'com.google.code.gson:gson:2.8.8',
+            'com.google.guava:guava:31.0.1-jre',
+            'org.jetbrains:annotations:22.0.0',
+            'com.google.dagger:dagger:2.39.1'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20',
+            'com.google.dagger:dagger-compiler:2.39.1'
+
+    // test
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1',
+            'org.mockito:mockito-core:3.12.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.20'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20',
+            'com.google.dagger:dagger-compiler:2.39.1'
+}
+
+test {
+    useJUnitPlatform()
+}
