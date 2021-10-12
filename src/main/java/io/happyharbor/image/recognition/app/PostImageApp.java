@@ -2,9 +2,7 @@ package io.happyharbor.image.recognition.app;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import io.happyharbor.image.recognition.configuration.DaggerImageRecognition;
 import io.happyharbor.image.recognition.dto.PostImageRequest;
@@ -16,12 +14,12 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class PostImage implements RequestStreamHandler {
+public class PostImageApp implements RequestStreamHandler {
 
     private final Gson gson;
     private final ImageRecognitionService imageRecognitionService;
 
-    public PostImage() {
+    public PostImageApp() {
         val imageRecognition = DaggerImageRecognition.create();
         this.imageRecognitionService = imageRecognition.imageRecognitionService();
         this.gson = imageRecognition.provideGson();

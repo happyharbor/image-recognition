@@ -9,6 +9,9 @@ repositories {
     mavenCentral()
 }
 
+sourceCompatibility = 11
+targetCompatibility = 11
+
 dependencies {
     // platforms
     implementation platform('software.amazon.awssdk:bom:2.17.52'),
@@ -51,3 +54,15 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+// Task for building the zip file for upload
+task buildZip(type: Zip) {
+    setArchivesBaseName("image-recognition")
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+build.dependsOn buildZip

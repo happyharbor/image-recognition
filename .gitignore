@@ -15,3 +15,6 @@ out/
 
 ### Mac Specific
 .DS_Store
+
+### Serverless
+/.serverless/

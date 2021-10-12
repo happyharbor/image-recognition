@@ -2,10 +2,13 @@ package io.happyharbor.image.recognition.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.net.URI;
 
 @Data
 @AllArgsConstructor
-// Uncomment if you add any fields
-// @NoArgsConstructor
+@NoArgsConstructor
 public class PostImageRequest {
+    private URI callbackUrl;
 }
