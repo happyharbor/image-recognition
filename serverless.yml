@@ -1,20 +1,7 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
-service: serverless-lambda
+service: image-recognition
 # app and org for use with dashboard.serverless.com
-#app: your-app-name
-#org: your-org-name
+#app: image-recognition
+#org: happyharbor
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -24,45 +11,33 @@ provider:
   name: aws
   runtime: java11
   lambdaHashingVersion: 20201221
+  httpApi:
+    cors: true
 
 # you can overwrite defaults here
 #  stage: dev
   region: eu-central-1
 
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:resources.Resources.BlobsTable.Properties.TableName}"
 
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
 
-# you can add packaging information here
 package:
   artifact: build/distributions/image-recognition-1.0-SNAPSHOT.zip
 
 functions:
-  post-image:
-    handler: io.happyharbor.image.recognition.app.PostImageApp
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - httpApi:
-#          path: /users/create
-#          method: get
+  create-blob:
+    handler: io.happyharbor.image.recognition.app.CreateBlobApp
+    events:
+      - httpApi:
+          path: /blobs
+          method: post
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
@@ -92,18 +67,26 @@ functions:
 #            host: example.com
 #            path: /hello
 
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
+    environment:
+      DYNAMO_DB_TABLE_NAME: ${self:resources.Resources.BlobsTable.Properties.TableName}
+      REGION: ${self:provider.region}
 
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
+resources:
+  Resources:
+    BlobsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: blobsTable-${sls:stage}
+        AttributeDefinitions:
+          - AttributeName: blobId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: blobId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 #    NewResource:
 #      Type: AWS::S3::Bucket
 #      Properties:
 #        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"

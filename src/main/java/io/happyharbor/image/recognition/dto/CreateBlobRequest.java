@@ -9,6 +9,6 @@ import java.net.URI;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostImageRequest {
+public class CreateBlobRequest {
     private URI callbackUrl;
 }
