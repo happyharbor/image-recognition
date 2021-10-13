@@ -23,6 +23,11 @@ provider:
       Action:
         - "dynamodb:PutItem"
       Resource: "arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:resources.Resources.BlobsTable.Properties.TableName}"
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+      Resource:
+        - "arn:aws:s3:::${self:resources.Resources.BlobsBucket.Properties.BucketName}/*"
 
 # you can define service wide environment variables here
 #  environment:
@@ -70,13 +75,14 @@ functions:
     environment:
       DYNAMO_DB_TABLE_NAME: ${self:resources.Resources.BlobsTable.Properties.TableName}
       REGION: ${self:provider.region}
+      BUCKET_NAME: ${self:resources.Resources.BlobsBucket.Properties.BucketName}
 
 resources:
   Resources:
     BlobsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: blobsTable-${sls:stage}
+        TableName: blobs-table-${sls:stage}
         AttributeDefinitions:
           - AttributeName: blobId
             AttributeType: S
@@ -86,7 +92,7 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
+    BlobsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${sls:stage}-blobs

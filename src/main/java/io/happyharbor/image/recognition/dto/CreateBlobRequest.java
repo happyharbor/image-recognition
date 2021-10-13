@@ -11,4 +11,5 @@ import java.net.URI;
 @NoArgsConstructor
 public class CreateBlobRequest {
     private URI callbackUrl;
+    private String contentType;
 }

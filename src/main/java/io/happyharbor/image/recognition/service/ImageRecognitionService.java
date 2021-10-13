@@ -1,6 +1,7 @@
 package io.happyharbor.image.recognition.service;
 
 import io.happyharbor.image.recognition.aws.DynamoDbHelper;
+import io.happyharbor.image.recognition.aws.S3Helper;
 import io.happyharbor.image.recognition.dto.BlobInfo;
 import io.happyharbor.image.recognition.dto.CreateBlobRequest;
 import io.happyharbor.image.recognition.dto.CreateBlobResponse;
@@ -16,10 +17,12 @@ import java.util.UUID;
 public class ImageRecognitionService {
 
     private final DynamoDbHelper dynamoDbHelper;
+    private final S3Helper s3Helper;
 
     @Inject
-    public ImageRecognitionService(final DynamoDbHelper dynamoDbHelper) {
+    public ImageRecognitionService(final DynamoDbHelper dynamoDbHelper, final S3Helper s3Helper) {
         this.dynamoDbHelper = dynamoDbHelper;
+        this.s3Helper = s3Helper;
     }
 
     public CreateBlobResponse createBlob(CreateBlobRequest createBlobRequest) {
@@ -30,8 +33,11 @@ public class ImageRecognitionService {
                 .blobId(blobId)
                 .callbackUrl(createBlobRequest.getCallbackUrl())
                 .build());
+
+        val presignedUrl = s3Helper.generatePresignedUrl(blobId, createBlobRequest.getContentType());
+
         final CreateBlobResponse response = CreateBlobResponse.builder()
-                .uploadUrl("upload_url")
+                .uploadUrl(presignedUrl)
                 .blobId(blobId)
                 .build();
         log.info("Post image finished with {}", response);

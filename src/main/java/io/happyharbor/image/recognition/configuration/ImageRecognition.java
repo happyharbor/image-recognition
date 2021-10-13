@@ -1,6 +1,6 @@
 package io.happyharbor.image.recognition.configuration;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Component;
 import io.happyharbor.image.recognition.service.ImageRecognitionService;
 
@@ -10,5 +10,5 @@ import javax.inject.Singleton;
 @Component(modules = {CommonModule.class})
 public interface ImageRecognition {
     ImageRecognitionService imageRecognitionService();
-    Gson provideGson();
+    ObjectMapper provideObjectMapper();
 }
