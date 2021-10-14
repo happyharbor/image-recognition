@@ -5,14 +5,15 @@ import lombok.Value;
 import java.util.Collections;
 import java.util.List;
 
+import static io.happyharbor.image.recognition.dto.BlobInfo.BLOB_STATUS_SUCCESS;
+
 @Value
 public class ImageRecognitionResults {
-    public static final String SUCCESS_MSG = "success";
     String status;
     List<ImageRecognitionResult> imageResults;
 
     public static ImageRecognitionResults success(final List<ImageRecognitionResult> imageRecognitionResults) {
-        return new ImageRecognitionResults(SUCCESS_MSG, imageRecognitionResults);
+        return new ImageRecognitionResults(BLOB_STATUS_SUCCESS, imageRecognitionResults);
     }
 
     public static ImageRecognitionResults failed(final String error) {

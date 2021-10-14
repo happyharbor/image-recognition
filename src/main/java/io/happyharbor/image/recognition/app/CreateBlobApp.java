@@ -40,6 +40,14 @@ public class CreateBlobApp implements RequestHandler<APIGatewayV2HTTPEvent, APIG
         try {
             val request = mapper.readValue(input.getBody(), CreateBlobRequest.class);
 
+            if (request.getCallbackUrl().getScheme() == null || request.getCallbackUrl().getScheme().length() == 0) {
+                return APIGatewayV2HTTPResponse.builder()
+                        .withStatusCode(406)
+                        .withHeaders(Map.of(CONTENT_TYPE, APPLICATION_JSON))
+                        .withBody(mapper.writeValueAsString(CreateBlobResponse.failed("malformed callback_url")))
+                        .build();
+            }
+
             if (request.getContentType() == null || request.getContentType().length() == 0) {
                 return APIGatewayV2HTTPResponse.builder()
                         .withStatusCode(406)

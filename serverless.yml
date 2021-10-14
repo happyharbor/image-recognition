@@ -88,6 +88,14 @@ functions:
     events:
       - s3: ${self:custom.bucket-name}
 
+  make-callback:
+    handler: io.happyharbor.image.recognition.app.MakeCallbackApp
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            !GetAtt BlobsTable.StreamArn
+
 resources:
   Resources:
     BlobsTable:
@@ -103,3 +111,5 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
