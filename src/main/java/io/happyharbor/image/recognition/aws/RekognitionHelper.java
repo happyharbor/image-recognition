@@ -49,7 +49,7 @@ public class RekognitionHelper {
                     .map(label -> new ImageRecognitionResult(label.name(), label.confidence()))
                     .collect(Collectors.toList());
 
-            return ImageRecognitionResults.success(imageRecognitionResults);
+            return ImageRecognitionResults.finished(imageRecognitionResults);
         } catch (AwsServiceException | SdkClientException e) {
             log.error(e.getMessage(), e);
             return ImageRecognitionResults.failed(e.getMessage());

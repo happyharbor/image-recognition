@@ -7,12 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.happyharbor.image.recognition.aws.DynamoDbHelper;
 import io.happyharbor.image.recognition.aws.RekognitionHelper;
 import io.happyharbor.image.recognition.aws.S3Helper;
-import io.happyharbor.image.recognition.dto.BlobInfo;
-import io.happyharbor.image.recognition.dto.CreateBlobRequest;
-import io.happyharbor.image.recognition.dto.CreateBlobResponse;
-import io.happyharbor.image.recognition.dto.ImageRecognitionResult;
+import io.happyharbor.image.recognition.dto.*;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
@@ -23,7 +19,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -79,6 +74,13 @@ public class ImageRecognitionService {
         log.info("Finish callback of {}", dynamodbEvent);
     }
 
+    public BlobInfoResponse getBlobInfo(final String blobId) {
+        val blobInfo = dynamoDbHelper.get(blobId);
+        return blobInfo == null ?
+                BlobInfoResponse.failed(String.format("No record with blob_id: %s was found", blobId)) :
+                new BlobInfoResponse(blobInfo.getStatus(), null, blobInfo.getImageRecognitionResults());
+    }
+
     private void processRecord(final DynamodbEvent.DynamodbStreamRecord dynamoDbRecord) {
         log.debug("Record to process: {}", dynamoDbRecord);
 
@@ -95,7 +97,7 @@ public class ImageRecognitionService {
         }
 
         switch (newStatus) {
-            case BLOB_STATUS_SUCCESS:
+            case BLOB_STATUS_FINISHED:
                 val imageRecognitionResults = dynamoDbRecord.getDynamodb()
                         .getNewImage()
                         .get("imageRecognitionResults")
@@ -105,18 +107,18 @@ public class ImageRecognitionService {
                         .map(r -> new ImageRecognitionResult(r.get("name").getS(), Float.parseFloat(r.get("confidence").getN())))
                         .collect(Collectors.toList());
                 log.debug("The image recognition results from dynamo db stream: {}", imageRecognitionResults);
-                sendCallBack(new CallBackDto(newStatus, null, imageRecognitionResults), callbackUrl);
+                sendCallBack(new BlobInfoResponse(newStatus, null, imageRecognitionResults), callbackUrl);
                 break;
             case BLOB_STATUS_UPLOAD:
             case BLOB_STATUS_IN_PROGRESS:
                 break;
             default:
-                sendCallBack(new CallBackDto("failed", newStatus, null), callbackUrl);
+                sendCallBack(BlobInfoResponse.failed(newStatus), callbackUrl);
         }
     }
 
     @SneakyThrows
-    private void sendCallBack(final CallBackDto callBackDto, final String callbackUrl) {
+    private void sendCallBack(final BlobInfoResponse callBackDto, final String callbackUrl) {
         val httpRequest = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(callBackDto)))
                 .uri(URI.create(callbackUrl))
@@ -144,18 +146,11 @@ public class ImageRecognitionService {
 
         val blobInfoFinished = blobInfo.toBuilder()
                 .status(imageRecognitionResults.getStatus())
-                .imageRecognitionResults(imageRecognitionResults.getStatus().equals(BLOB_STATUS_SUCCESS) ?
+                .imageRecognitionResults(imageRecognitionResults.getStatus().equals(BLOB_STATUS_FINISHED) ?
                         imageRecognitionResults.getImageResults() :
                         Collections.emptyList())
                 .build();
         dynamoDbHelper.save(blobInfoFinished);
         log.info("Finished processing of {}", blobInfo);
-    }
-
-    @Value
-    private static class CallBackDto {
-        String status;
-        String errorMessage;
-        List<ImageRecognitionResult> imageRecognitionResults;
     }
 }

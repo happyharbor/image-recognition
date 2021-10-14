@@ -15,7 +15,7 @@ import java.util.UUID;
 @DynamoDbImmutable(builder = BlobInfo.BlobInfoBuilder.class)
 public class BlobInfo {
 
-    public static final String BLOB_STATUS_SUCCESS = "success";
+    public static final String BLOB_STATUS_FINISHED = "finished";
     public static final String BLOB_STATUS_UPLOAD = "waiting for image upload";
     public static final String BLOB_STATUS_IN_PROGRESS = "in progress";
 
