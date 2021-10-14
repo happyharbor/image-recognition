@@ -1,0 +1,115 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Image Recognition
+  license:
+    name: MIT
+servers:
+  - url: https://n2klnb7ad0.execute-api.eu-central-1.amazonaws.com
+paths:
+  /blobs:
+    post:
+      summary: Create blob and return a presigned url
+      operationId: createBlob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBlobRequest"
+      tags:
+        - blobs
+      responses:
+        '200':
+          description: The presigned url
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateBlobResponse"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateBlobResponseError"
+  /blobs/{blob_id}:
+    get:
+      summary: Info for a blob
+      operationId: getBlobInfo
+      tags:
+        - blobs
+      parameters:
+        - name: blob_id
+          in: path
+          required: true
+          description: The id of the blob to retrieve
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlobInfoResponse"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlobInfoResponseError"
+components:
+  schemas:
+    CreateBlobRequest:
+      type: object
+      required:
+        - callback_url
+        - content_type
+      properties:
+        callback_url:
+          type: string
+          format: url
+        content_type:
+          type: string
+    CreateBlobResponse:
+      type: object
+      properties:
+        upload_url:
+          type: string
+          format: uri
+        blob_id:
+          type: string
+          format: uuid
+        error:
+          type: boolean
+    CreateBlobResponseError:
+      type: object
+      properties:
+        error_message:
+          type: string
+        error:
+          type: boolean
+    ImageRecognitionResult:
+      type: object
+      properties:
+        name:
+          type: string
+        confidence:
+          type: number
+          format: float
+    BlobInfoResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        image_recognition_results:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageRecognitionResult"
+    BlobInfoResponseError:
+      type: object
+      properties:
+        status:
+          type: string
+        error_message:
+          type: string

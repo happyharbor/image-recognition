@@ -11,7 +11,7 @@ the `callback_url` (if specified).
 
 Additionally, the user may send a GET request to `/blobs/{blob_id}` in order to get the recognition results.
 
-You may find the API definition [here](TODO).
+You may find the API definition [here](src/main/resources/api-definition.yaml).
 
 ## Implementation
 
