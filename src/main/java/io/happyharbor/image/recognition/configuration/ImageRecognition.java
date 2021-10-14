@@ -7,7 +7,7 @@ import io.happyharbor.image.recognition.service.ImageRecognitionService;
 import javax.inject.Singleton;
 
 @Singleton
-@Component(modules = {CommonModule.class})
+@Component(modules = {CommonModule.class, AwsModule.class})
 public interface ImageRecognition {
     ImageRecognitionService imageRecognitionService();
     ObjectMapper provideObjectMapper();

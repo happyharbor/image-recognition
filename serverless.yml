@@ -7,6 +7,9 @@ service: image-recognition
 # Check out our docs for more details
 frameworkVersion: '2'
 
+custom:
+  bucket-name: ${self:service}-${sls:stage}-blobs
+
 provider:
   name: aws
   runtime: java11
@@ -22,16 +25,24 @@ provider:
     - Effect: "Allow"
       Action:
         - "dynamodb:PutItem"
+        - "dynamodb:GetItem"
       Resource: "arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:resources.Resources.BlobsTable.Properties.TableName}"
     - Effect: "Allow"
       Action:
         - "s3:PutObject"
+        - "s3:GetObject"
       Resource:
-        - "arn:aws:s3:::${self:resources.Resources.BlobsBucket.Properties.BucketName}/*"
+        - "arn:aws:s3:::${self:custom.bucket-name}/*"
+    - Effect: "Allow"
+      Action:
+        - "rekognition:DetectLabels"
+      Resource:
+        - "*"
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  environment:
+    DYNAMO_DB_TABLE_NAME: ${self:resources.Resources.BlobsTable.Properties.TableName}
+    REGION: ${self:provider.region}
+    BUCKET_NAME: ${self:custom.bucket-name}
 
 package:
   artifact: build/distributions/image-recognition-1.0-SNAPSHOT.zip
@@ -72,10 +83,10 @@ functions:
 #            host: example.com
 #            path: /hello
 
-    environment:
-      DYNAMO_DB_TABLE_NAME: ${self:resources.Resources.BlobsTable.Properties.TableName}
-      REGION: ${self:provider.region}
-      BUCKET_NAME: ${self:resources.Resources.BlobsBucket.Properties.BucketName}
+  process-blob:
+    handler: io.happyharbor.image.recognition.app.ProcessBlobApp
+    events:
+      - s3: ${self:custom.bucket-name}
 
 resources:
   Resources:
@@ -92,7 +103,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-    BlobsBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:service}-${sls:stage}-blobs

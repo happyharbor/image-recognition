@@ -21,3 +21,7 @@ You may find the API definition [here](TODO).
 
 The Serverless framework is used for describing infrastructure. The user is able to deploy the service to any account
 with sls deploy.
+
+## Development
+
+Just build the project in order for the pre-compile weaving of dagger to take place.
