@@ -32,18 +32,18 @@ public class S3Helper {
     }
 
     public URL generatePresignedUrl(final UUID blobId, final String contentType) {
-        PutObjectRequest objectRequest = PutObjectRequest.builder()
+        val objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(String.format("%s.%s", blobId.toString(), CONTENT_TYPES_SUFFIX_MAP.get(contentType)))
                 .contentType(contentType)
                 .build();
 
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+        val presignRequest = PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(10))
                 .putObjectRequest(objectRequest)
                 .build();
 
-        PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(presignRequest);
+        val presignedRequest = presigner.presignPutObject(presignRequest);
 
         val url = presignedRequest.url();
         log.debug("The presigned url is {}", url);

@@ -4,11 +4,9 @@ import dagger.Module;
 import dagger.Provides;
 import io.happyharbor.image.recognition.dto.BlobInfo;
 import lombok.val;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.rekognition.RekognitionClient;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
@@ -37,13 +35,13 @@ public interface AwsModule {
                 .build();
     }
 
-    @Provides @Singleton static DynamoDbTable<BlobInfo> providedDynamoDbTable() {
-        val dynamoDbEnhancedClient = DynamoDbEnhancedClient.builder()
-                .dynamoDbClient(DynamoDbClient.builder()
-                        .region(Region.of(System.getenv(REGION)))
+    @Provides @Singleton static DynamoDbAsyncTable<BlobInfo> providedDynamoDbTable() {
+        val dynamoClient = DynamoDbEnhancedAsyncClient.builder()
+                .dynamoDbClient(DynamoDbAsyncClient.builder()
+                        .region(Region.of(System.getenv("REGION")))
                         .build())
                 .build();
-        return dynamoDbEnhancedClient.table(System.getenv("DYNAMO_DB_TABLE_NAME"),
+        return dynamoClient.table(System.getenv("DYNAMO_DB_TABLE_NAME"),
                 TableSchema.fromImmutableClass(BlobInfo.class));
     }
 }

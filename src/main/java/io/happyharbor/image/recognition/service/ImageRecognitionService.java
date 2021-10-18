@@ -49,13 +49,16 @@ public class ImageRecognitionService {
         log.debug("Starting creating blob of {}", createBlobRequest);
 
         val blobId = UUID.randomUUID();
-        dynamoDbHelper.save(BlobInfo.builder()
-                                    .blobId(blobId)
-                                    .callbackUrl(createBlobRequest.getCallbackUrl())
-                                    .status(BLOB_STATUS_UPLOAD)
-                                    .build());
+
+        val saveFuture = dynamoDbHelper.save(builder()
+                .blobId(blobId)
+                .callbackUrl(createBlobRequest.getCallbackUrl())
+                .status(BLOB_STATUS_UPLOAD)
+                .build());
 
         val presignedUrl = s3Helper.generatePresignedUrl(blobId, createBlobRequest.getContentType());
+
+        saveFuture.join();
 
         final CreateBlobResponse response = CreateBlobResponse.success(presignedUrl, blobId);
         log.info("Create blob finished with {}", response);
@@ -75,7 +78,7 @@ public class ImageRecognitionService {
     }
 
     public BlobInfoResponse getBlobInfo(final String blobId) {
-        val blobInfo = dynamoDbHelper.get(blobId);
+        val blobInfo = dynamoDbHelper.get(blobId).join();
         return blobInfo == null ?
                 BlobInfoResponse.failed(String.format("No record with blob_id: %s was found", blobId)) :
                 new BlobInfoResponse(blobInfo.getStatus(), null, blobInfo.getImageRecognitionResults());
@@ -135,7 +138,7 @@ public class ImageRecognitionService {
         final int endIndex = key.lastIndexOf('.') == -1 ? key.length() : key.lastIndexOf('.');
         var blobId = key.substring(key.lastIndexOf('/') + 1, endIndex);
 
-        val blobInfo = dynamoDbHelper.get(blobId);
+        val blobInfo = dynamoDbHelper.get(blobId).join();
 
         val blobInfoInProgress = blobInfo.toBuilder()
                 .status(BLOB_STATUS_IN_PROGRESS)
